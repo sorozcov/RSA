@@ -5,7 +5,7 @@
 
 import random
 from sympy import mod_inverse
-
+from Crypto.Util.number import bytes_to_long ,long_to_bytes
 import binascii
 # First Alice and Bob will communicate thru RSA
 # STEPS FOR RSA
@@ -122,7 +122,7 @@ def modInverse(e,n):
 #RSA Object
 class RSA(object):
     #generate our own RSA
-    def __init__(self,a=100,b=300,p=None, q=None,assumeNumbers=True):
+    def __init__(self,a=100,b=999,p=None, q=None,assumeNumbers=False,byChar=False):
         if(p==None or q==None):
             p,q,n = generatePandQ(a,b)
         else:
@@ -136,6 +136,7 @@ class RSA(object):
         self.publicKey=(e,n)
         self.privateKey=(d,n)
         self.assumeNumbers = assumeNumbers
+        self.byChar = byChar
 
     # encrypt  c=m^{e}mod{n}
 
@@ -145,12 +146,21 @@ class RSA(object):
             c = pow(m,self.e,self.n)
             return c
         else:
-            finalEncrypt=""
-            for char in message:
-                m = ord(char)
+            if(self.byChar):
+                finalEncrypt=""
+                for char in message:
+                    m = ord(char)
+                    c = pow(m,self.e,self.n)
+                    finalEncrypt+= chr(c)
+                return finalEncrypt
+            else:
+                m=message.encode('latin-1')
+                m=bytes_to_long(m)
+            
                 c = pow(m,self.e,self.n)
-                finalEncrypt+= chr(c)
-            return finalEncrypt
+                cipher = long_to_bytes(c)
+                return cipher.decode('latin-1')
+            
 
     # decrypt  m=c^{d}mod{n}
     def decrypt(self,cipher):
@@ -160,43 +170,36 @@ class RSA(object):
             m = pow(c,self.d,self.n)
             return m
         else:
-            finalDecrypted=""
-            for char in cipher:
-                c=ord(char)
+            if(self.byChar):
+                finalDecrypted=""
+                for char in cipher:
+                    c=ord(char)
+                    m = pow(c,self.d,self.n)
+                    finalDecrypted+= chr(m)
+                return finalDecrypted
+            else:
+                c=cipher.encode('latin-1')
+                c=bytes_to_long(c)
                 m = pow(c,self.d,self.n)
-                finalDecrypted+= chr(m)
-            return finalDecrypted
+                message = long_to_bytes(m)
+                return message.decode('latin-1')
 
-    def stringToNum(self,string):
-        strings=['0'*(3-len(str(ord(chars)))%3)+str(ord(chars)) if (len(str(ord(chars)))<3) else str(ord(chars)) for chars in string]
-        finalNumber=""
-        for stringI in strings:
-            finalNumber+=stringI
-        return int(finalNumber)
 
-    def numToString(self,num):
-        numberLength=3-(len(str(num))%3)
-        numberLength= 0 if numberLength==3 else numberLength
-        num="0"*numberLength+str(num) 
-        
-        n=3
-        nums=[num[i:i+n] for i in range(0, len(num), n)]
-        finalString=""
-        for num in nums:
-            finalString+=chr(int(num))
-        
-        return finalString
 
         
 
 
         
+def mainExample():
+    print("Welcome to our own RSA implementation example")
+    print("This an example of use: ")
+    rsa= RSA(assumeNumbers=False,byChar=True)
+    message="My Secret Message"
+    print("Message to encrypt: ",message)
+    e=rsa.encrypt(message)
+    d=rsa.decrypt(e)
+    print("Encryption: ",e)
+    print("Decryption: ",d)
 
-print("Welcome to our own RSA implementation")
-rsa= RSA(assumeNumbers=False)
-e=rsa.encrypt("aaa")
-d=rsa.decrypt(e)
-print("Encryption: ",e)
-print("Decryption: ",d)
-
+mainExample()
 

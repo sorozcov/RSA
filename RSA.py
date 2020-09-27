@@ -7,6 +7,7 @@ import random
 from sympy import mod_inverse
 from Crypto.Util.number import bytes_to_long ,long_to_bytes
 import binascii
+
 # First Alice and Bob will communicate thru RSA
 # STEPS FOR RSA
 # 1. Generate two big random prime number p and q
@@ -156,7 +157,6 @@ class RSA(object):
             else:
                 m=message.encode('latin-1')
                 m=bytes_to_long(m)
-            
                 c = pow(m,self.e,self.n)
                 cipher = long_to_bytes(c)
                 return cipher.decode('latin-1')
@@ -196,10 +196,10 @@ def mainExample():
     rsa= RSA(assumeNumbers=False,byChar=True)
     message="My Secret Message"
     print("Message to encrypt: ",message)
-    e=rsa.encrypt(message)
-    d=rsa.decrypt(e)
-    print("Encryption: ",e)
-    print("Decryption: ",d)
+    encrypt=rsa.encrypt(message)
+    decrypt=rsa.decrypt(encrypt)
+    print("Encryption: ",encrypt)
+    print("Decryption: ",decrypt)
 
 mainExample()
 
